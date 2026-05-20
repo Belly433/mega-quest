@@ -9,38 +9,174 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as JoinRouteImport } from './routes/join'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CreateQuizRouteImport } from './routes/create-quiz'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ScoreSessionIdRouteImport } from './routes/score.$sessionId'
+import { Route as ResultsQuizIdRouteImport } from './routes/results.$quizId'
+import { Route as PlaySessionIdRouteImport } from './routes/play.$sessionId'
+import { Route as LeaderboardSessionIdRouteImport } from './routes/leaderboard.$sessionId'
 
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JoinRoute = JoinRouteImport.update({
+  id: '/join',
+  path: '/join',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreateQuizRoute = CreateQuizRouteImport.update({
+  id: '/create-quiz',
+  path: '/create-quiz',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ScoreSessionIdRoute = ScoreSessionIdRouteImport.update({
+  id: '/score/$sessionId',
+  path: '/score/$sessionId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResultsQuizIdRoute = ResultsQuizIdRouteImport.update({
+  id: '/results/$quizId',
+  path: '/results/$quizId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlaySessionIdRoute = PlaySessionIdRouteImport.update({
+  id: '/play/$sessionId',
+  path: '/play/$sessionId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeaderboardSessionIdRoute = LeaderboardSessionIdRouteImport.update({
+  id: '/leaderboard/$sessionId',
+  path: '/leaderboard/$sessionId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/create-quiz': typeof CreateQuizRoute
+  '/dashboard': typeof DashboardRoute
+  '/join': typeof JoinRoute
+  '/login': typeof LoginRoute
+  '/leaderboard/$sessionId': typeof LeaderboardSessionIdRoute
+  '/play/$sessionId': typeof PlaySessionIdRoute
+  '/results/$quizId': typeof ResultsQuizIdRoute
+  '/score/$sessionId': typeof ScoreSessionIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/create-quiz': typeof CreateQuizRoute
+  '/dashboard': typeof DashboardRoute
+  '/join': typeof JoinRoute
+  '/login': typeof LoginRoute
+  '/leaderboard/$sessionId': typeof LeaderboardSessionIdRoute
+  '/play/$sessionId': typeof PlaySessionIdRoute
+  '/results/$quizId': typeof ResultsQuizIdRoute
+  '/score/$sessionId': typeof ScoreSessionIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/create-quiz': typeof CreateQuizRoute
+  '/dashboard': typeof DashboardRoute
+  '/join': typeof JoinRoute
+  '/login': typeof LoginRoute
+  '/leaderboard/$sessionId': typeof LeaderboardSessionIdRoute
+  '/play/$sessionId': typeof PlaySessionIdRoute
+  '/results/$quizId': typeof ResultsQuizIdRoute
+  '/score/$sessionId': typeof ScoreSessionIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/create-quiz'
+    | '/dashboard'
+    | '/join'
+    | '/login'
+    | '/leaderboard/$sessionId'
+    | '/play/$sessionId'
+    | '/results/$quizId'
+    | '/score/$sessionId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/create-quiz'
+    | '/dashboard'
+    | '/join'
+    | '/login'
+    | '/leaderboard/$sessionId'
+    | '/play/$sessionId'
+    | '/results/$quizId'
+    | '/score/$sessionId'
+  id:
+    | '__root__'
+    | '/'
+    | '/create-quiz'
+    | '/dashboard'
+    | '/join'
+    | '/login'
+    | '/leaderboard/$sessionId'
+    | '/play/$sessionId'
+    | '/results/$quizId'
+    | '/score/$sessionId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CreateQuizRoute: typeof CreateQuizRoute
+  DashboardRoute: typeof DashboardRoute
+  JoinRoute: typeof JoinRoute
+  LoginRoute: typeof LoginRoute
+  LeaderboardSessionIdRoute: typeof LeaderboardSessionIdRoute
+  PlaySessionIdRoute: typeof PlaySessionIdRoute
+  ResultsQuizIdRoute: typeof ResultsQuizIdRoute
+  ScoreSessionIdRoute: typeof ScoreSessionIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/join': {
+      id: '/join'
+      path: '/join'
+      fullPath: '/join'
+      preLoaderRoute: typeof JoinRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/create-quiz': {
+      id: '/create-quiz'
+      path: '/create-quiz'
+      fullPath: '/create-quiz'
+      preLoaderRoute: typeof CreateQuizRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +184,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/score/$sessionId': {
+      id: '/score/$sessionId'
+      path: '/score/$sessionId'
+      fullPath: '/score/$sessionId'
+      preLoaderRoute: typeof ScoreSessionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/results/$quizId': {
+      id: '/results/$quizId'
+      path: '/results/$quizId'
+      fullPath: '/results/$quizId'
+      preLoaderRoute: typeof ResultsQuizIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/play/$sessionId': {
+      id: '/play/$sessionId'
+      path: '/play/$sessionId'
+      fullPath: '/play/$sessionId'
+      preLoaderRoute: typeof PlaySessionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/leaderboard/$sessionId': {
+      id: '/leaderboard/$sessionId'
+      path: '/leaderboard/$sessionId'
+      fullPath: '/leaderboard/$sessionId'
+      preLoaderRoute: typeof LeaderboardSessionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CreateQuizRoute: CreateQuizRoute,
+  DashboardRoute: DashboardRoute,
+  JoinRoute: JoinRoute,
+  LoginRoute: LoginRoute,
+  LeaderboardSessionIdRoute: LeaderboardSessionIdRoute,
+  PlaySessionIdRoute: PlaySessionIdRoute,
+  ResultsQuizIdRoute: ResultsQuizIdRoute,
+  ScoreSessionIdRoute: ScoreSessionIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
