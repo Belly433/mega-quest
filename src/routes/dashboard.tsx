@@ -16,7 +16,7 @@ function Dashboard() {
 
   useEffect(() => {
     quizApi
-      .list()
+      .getQuizzes()
       .then((data) => setQuizzes(Array.isArray(data) ? data : data?.items || []))
       .catch(() => setQuizzes([]))
       .finally(() => setLoading(false));
@@ -24,9 +24,7 @@ function Dashboard() {
 
   async function startQuiz(id: string) {
     try {
-      const session = await quizApi.start(id);
-      const code = session.code || session.pin;
-      toast.success(`Game PIN: ${code}`);
+      const session = await console.log(id);
     } catch {
       toast.error("Could not start session");
     }
