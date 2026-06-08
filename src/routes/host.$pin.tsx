@@ -47,7 +47,8 @@ function HostPage() {
 
   // ── WebSocket connection ───────────────────────────────────────────────────
   useEffect(() => {
-    const ws = new WebSocket(`${WS_URL}/session/ws/host/${pin}`);
+    const quizId = localStorage.getItem("host_quiz_id") || "0";
+    const ws = new WebSocket(`${WS_URL}/session/ws/host/${pin}?quiz_id=${quizId}`);
     wsRef.current = ws;
 
     ws.onopen = () => setWsReady(true);
