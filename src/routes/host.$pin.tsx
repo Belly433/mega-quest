@@ -35,6 +35,9 @@ function HostPage() {
 
   const wsRef = useRef<WebSocket | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const reconnectRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const retriesRef = useRef(0);
+  const destroyedRef = useRef(false);
 
   const [phase, setPhase] = useState<Phase>("lobby");
   const [players, setPlayers] = useState<string[]>([]);
@@ -45,61 +48,81 @@ function HostPage() {
   const [error, setError] = useState<string | null>(null);
   const [wsReady, setWsReady] = useState(false);
 
-  // ── WebSocket connection ───────────────────────────────────────────────────
+  // ── WebSocket connection with auto-reconnect ───────────────────────────────
   useEffect(() => {
-    const quizId = localStorage.getItem("host_quiz_id") || "0";
-    const ws = new WebSocket(`${WS_URL}/session/ws/host/${pin}?quiz_id=${quizId}`);
-    wsRef.current = ws;
+    destroyedRef.current = false;
+    retriesRef.current = 0;
 
-    ws.onopen = () => setWsReady(true);
+    function connect() {
+      if (destroyedRef.current) return;
 
-    ws.onerror = () => {
-      // only show error if we haven't already shown the lobby
-      setError((prev) => prev ?? "WebSocket connection failed. Is the backend running?");
-      toast.error("Cannot connect to server");
-    };
+      const quizId = localStorage.getItem("host_quiz_id") || "0";
+      const ws = new WebSocket(`${WS_URL}/session/ws/host/${pin}?quiz_id=${quizId}`);
+      wsRef.current = ws;
 
-    ws.onclose = (e) => {
-      setWsReady(false);
-      if (e.code !== 1000 && e.code !== 1001) {
-        setError((prev) => prev ?? "Connection lost. Please go back and try again.");
-      }
-    };
+      ws.onopen = () => {
+        retriesRef.current = 0;
+        setWsReady(true);
+        setError(null);
+      };
 
-    ws.onmessage = (event) => {
-      const msg = JSON.parse(event.data);
+      ws.onerror = () => {
+        // handled by onclose
+      };
 
-      if (msg.type === "player_list") {
-        setPlayers(msg.players);
-      } else if (msg.type === "question") {
-        const q: Question = {
-          id: msg.id,
-          text: msg.text,
-          options: msg.options,
-          correctIndex: msg.correctIndex,
-          timeLimit: msg.timeLimit,
-          index: msg.index,
-          total: msg.total,
-        };
-        setQuestion(q);
-        setPhase("playing");
-        setAnsweredCount(0);
-        setTimeLeft(q.timeLimit);
-        startTimer(q.timeLimit);
-      } else if (msg.type === "answer_count") {
-        setAnsweredCount(msg.answered);
-      } else if (msg.type === "game_over") {
-        stopTimer();
-        setLeaderboard(msg.leaderboard || []);
-        setPhase("finished");
-      } else if (msg.type === "error") {
-        toast.error(msg.message);
-      }
-    };
+      ws.onclose = (e) => {
+        setWsReady(false);
+        if (destroyedRef.current) return;
+
+        const maxRetries = 5;
+        if (e.code !== 1000 && retriesRef.current < maxRetries) {
+          retriesRef.current += 1;
+          const delay = Math.min(1000 * retriesRef.current, 4000);
+          reconnectRef.current = setTimeout(connect, delay);
+        } else if (retriesRef.current >= maxRetries) {
+          setError("Cannot connect to backend. Make sure the server is running on port 8000.");
+        }
+      };
+
+      ws.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
+
+        if (msg.type === "player_list") {
+          setPlayers(msg.players);
+        } else if (msg.type === "question") {
+          const q: Question = {
+            id: msg.id,
+            text: msg.text,
+            options: msg.options,
+            correctIndex: msg.correctIndex,
+            timeLimit: msg.timeLimit,
+            index: msg.index,
+            total: msg.total,
+          };
+          setQuestion(q);
+          setPhase("playing");
+          setAnsweredCount(0);
+          setTimeLeft(q.timeLimit);
+          startTimer(q.timeLimit);
+        } else if (msg.type === "answer_count") {
+          setAnsweredCount(msg.answered);
+        } else if (msg.type === "game_over") {
+          stopTimer();
+          setLeaderboard(msg.leaderboard || []);
+          setPhase("finished");
+        } else if (msg.type === "error") {
+          toast.error(msg.message);
+        }
+      };
+    }
+
+    connect();
 
     return () => {
+      destroyedRef.current = true;
+      if (reconnectRef.current) clearTimeout(reconnectRef.current);
+      wsRef.current?.close(1000);
       stopTimer();
-      ws.close();
     };
   }, [pin]);
 
