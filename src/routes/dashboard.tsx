@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { quizApi } from "@/lib/api";
 import { Logo } from "@/components/Logo";
 import { toast } from "sonner";
+import { sessionApi } from "@/lib/api";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — Quizly" }] }),
@@ -22,13 +23,19 @@ function Dashboard() {
       .finally(() => setLoading(false));
   }, []);
 
-  async function startQuiz(id: string) {
-    try {
-      const session = await console.log(id);
-    } catch {
-      toast.error("Could not start session");
-    }
-  }
+async function startQuiz(id: number) {
+
+  const session = await sessionApi.createSession(id);
+
+console.log(session);
+
+  navigate({
+    to: "/host/$pin",
+    params: {
+      pin: session.pin,
+    },
+  });
+}
 
   function logout() {
     localStorage.removeItem("quiz_token");
