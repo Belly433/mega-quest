@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Logo } from "@/components/Logo";
-
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
