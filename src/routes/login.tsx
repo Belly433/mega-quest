@@ -25,12 +25,22 @@ function LoginPage() {
         mode === "login"
           ? await authApi.login(email, password)
           : await authApi.register(email, password, name);
-      const token = data.access_token || data.token;
-      if (token) localStorage.setItem("quiz_token", token);
-      toast.success(mode === "login" ? "Welcome back!" : "Account created");
+
+      if (data.message === "User not found" || data.message === "Incorrect password") {
+        toast.error(data.message);
+        return;
+      }
+      if (!data.user_id) {
+        toast.error("Authentication failed — check your credentials");
+        return;
+      }
+
+      localStorage.setItem("quiz_user_id", String(data.user_id));
+      localStorage.setItem("quiz_username", data.username || name);
+      toast.success(mode === "login" ? "Welcome back!" : "Account created!");
       navigate({ to: "/dashboard" });
-    } catch (err: any) {
-      toast.error(err?.response?.data?.detail || "Authentication failed");
+    } catch {
+      toast.error("Could not reach the server. Is the backend running?");
     } finally {
       setLoading(false);
     }
@@ -47,7 +57,9 @@ function LoginPage() {
             {mode === "login" ? "Welcome back" : "Create account"}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {mode === "login" ? "Sign in to host quizzes." : "Start hosting quizzes in minutes."}
+            {mode === "login"
+              ? "Sign in to host quizzes."
+              : "Start hosting quizzes in minutes."}
           </p>
 
           <form className="mt-6 space-y-4" onSubmit={onSubmit}>
@@ -89,7 +101,11 @@ function LoginPage() {
               disabled={loading}
               className="w-full mt-2 py-3.5 rounded-xl bg-primary text-primary-foreground font-bold shadow-glow hover:scale-[1.02] transition-transform disabled:opacity-60"
             >
-              {loading ? "Please wait…" : mode === "login" ? "Sign in" : "Create account"}
+              {loading
+                ? "Please wait…"
+                : mode === "login"
+                  ? "Sign in"
+                  : "Create account"}
             </button>
           </form>
 
@@ -97,7 +113,9 @@ function LoginPage() {
             onClick={() => setMode(mode === "login" ? "register" : "login")}
             className="mt-5 w-full text-sm text-muted-foreground hover:text-foreground"
           >
-            {mode === "login" ? "No account? Register" : "Have an account? Sign in"}
+            {mode === "login"
+              ? "No account? Register"
+              : "Have an account? Sign in"}
           </button>
 
           <div className="mt-6 pt-6 border-t text-center text-sm">
@@ -118,16 +136,27 @@ function LoginPage() {
           color: var(--color-foreground);
           outline: none;
         }
-        .quiz-input:focus { border-color: var(--color-ring); box-shadow: 0 0 0 3px oklch(0.72 0.22 310 / 0.2); }
+        .quiz-input:focus {
+          border-color: var(--color-ring);
+          box-shadow: 0 0 0 3px oklch(0.72 0.22 310 / 0.2);
+        }
       `}</style>
     </div>
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <label className="block">
-      <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</span>
+      <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        {label}
+      </span>
       <div className="mt-1.5">{children}</div>
     </label>
   );

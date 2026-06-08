@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Logo } from "@/components/Logo";
-import { playApi, quizApi } from "@/lib/api";
+import { quizApi } from "@/lib/api";
 
 export const Route = createFileRoute("/results/$quizId")({
   head: () => ({ meta: [{ title: "Quiz results — Quizly" }] }),
@@ -10,58 +10,67 @@ export const Route = createFileRoute("/results/$quizId")({
 
 function Results() {
   const { quizId } = Route.useParams();
-  const [board, setBoard] = useState<any[]>([]);
   const [quiz, setQuiz] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([
-      quizApi.get(quizId).catch(() => null),
-      playApi.leaderboard(quizId).catch(() => []),
-    ]).then(([q, lb]) => {
-      setQuiz(q);
-      setBoard(Array.isArray(lb) ? lb : lb?.items || []);
-      setLoading(false);
-    });
+    quizApi
+      .get(quizId)
+      .then(setQuiz)
+      .catch(() => setQuiz(null))
+      .finally(() => setLoading(false));
   }, [quizId]);
 
   return (
     <div className="min-h-screen">
       <header className="px-6 py-5 max-w-5xl mx-auto w-full flex items-center justify-between">
         <Logo />
-        <Link to="/dashboard" className="text-sm hover:text-primary">← Dashboard</Link>
+        <Link to="/dashboard" className="text-sm hover:text-primary">
+          ← Dashboard
+        </Link>
       </header>
 
       <main className="max-w-3xl mx-auto px-6 pb-20">
-        <h1 className="text-4xl font-extrabold tracking-tight">{quiz?.title || "Results"}</h1>
-        <p className="text-muted-foreground mt-1">Final leaderboard</p>
+        {loading ? (
+          <div className="mt-12 text-center text-muted-foreground">Loading…</div>
+        ) : !quiz ? (
+          <div className="mt-12 text-center text-muted-foreground">Quiz not found.</div>
+        ) : (
+          <>
+            <h1 className="text-4xl font-extrabold tracking-tight">{quiz.title}</h1>
+            <p className="text-muted-foreground mt-1">
+              {quiz.questions?.length ?? 0} questions
+            </p>
 
-        <div className="mt-8 bg-gradient-card border rounded-3xl p-4 shadow-card">
-          {loading ? (
-            <div className="p-6 text-center text-muted-foreground">Loading…</div>
-          ) : board.length === 0 ? (
-            <div className="p-10 text-center text-muted-foreground">No results yet.</div>
-          ) : (
-            <ol className="divide-y divide-border">
-              {board.map((p, i) => (
-                <li key={p.id || i} className="flex items-center gap-4 py-3 px-2">
-                  <span
-                    className={`h-10 w-10 rounded-xl flex items-center justify-center font-black text-lg ${
-                      i === 0 ? "bg-answer-yellow text-answer-yellow-foreground"
-                      : i === 1 ? "bg-answer-blue text-answer-blue-foreground"
-                      : i === 2 ? "bg-answer-red text-answer-red-foreground"
-                      : "bg-card border"
-                    }`}
-                  >
-                    {i + 1}
-                  </span>
-                  <span className="flex-1 font-bold">{p.nickname || p.name}</span>
-                  <span className="text-primary font-extrabold tabular-nums">{p.score ?? 0}</span>
-                </li>
-              ))}
-            </ol>
-          )}
-        </div>
+            <div className="mt-8 bg-gradient-card border rounded-3xl p-4 shadow-card">
+              <h2 className="text-lg font-bold px-2 pt-2 pb-3">Questions</h2>
+              <ol className="divide-y divide-border">
+                {(quiz.questions || []).map((q: any, i: number) => (
+                  <li key={q.id} className="py-4 px-2">
+                    <div className="font-semibold">
+                      {i + 1}. {q.text}
+                    </div>
+                    <div className="mt-2 grid grid-cols-2 gap-1">
+                      {q.options.map((opt: string, j: number) => (
+                        <div
+                          key={j}
+                          className={`text-sm px-3 py-1.5 rounded-lg ${
+                            j === q.correctIndex
+                              ? "bg-green-500/15 text-green-500 font-bold"
+                              : "bg-card border text-muted-foreground"
+                          }`}
+                        >
+                          {opt}
+                          {j === q.correctIndex && " ✓"}
+                        </div>
+                      ))}
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </>
+        )}
       </main>
     </div>
   );
