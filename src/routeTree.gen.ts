@@ -16,8 +16,12 @@ import { Route as CreateQuizRouteImport } from './routes/create-quiz'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ScoreSessionIdRouteImport } from './routes/score.$sessionId'
 import { Route as ResultsQuizIdRouteImport } from './routes/results.$quizId'
+import { Route as QuizPinRouteImport } from './routes/quiz/$pin'
+import { Route as PlayerPinRouteImport } from './routes/player/$pin'
 import { Route as PlaySessionIdRouteImport } from './routes/play.$sessionId'
+import { Route as PlayPinRouteImport } from './routes/play.$pin'
 import { Route as LeaderboardSessionIdRouteImport } from './routes/leaderboard.$sessionId'
+import { Route as HostPinRouteImport } from './routes/host.$pin'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -54,14 +58,34 @@ const ResultsQuizIdRoute = ResultsQuizIdRouteImport.update({
   path: '/results/$quizId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const QuizPinRoute = QuizPinRouteImport.update({
+  id: '/quiz/$pin',
+  path: '/quiz/$pin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlayerPinRoute = PlayerPinRouteImport.update({
+  id: '/player/$pin',
+  path: '/player/$pin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PlaySessionIdRoute = PlaySessionIdRouteImport.update({
   id: '/play/$sessionId',
   path: '/play/$sessionId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PlayPinRoute = PlayPinRouteImport.update({
+  id: '/play/$pin',
+  path: '/play/$pin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LeaderboardSessionIdRoute = LeaderboardSessionIdRouteImport.update({
   id: '/leaderboard/$sessionId',
   path: '/leaderboard/$sessionId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HostPinRoute = HostPinRouteImport.update({
+  id: '/host/$pin',
+  path: '/host/$pin',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -71,8 +95,12 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/join': typeof JoinRoute
   '/login': typeof LoginRoute
+  '/host/$pin': typeof HostPinRoute
   '/leaderboard/$sessionId': typeof LeaderboardSessionIdRoute
+  '/play/$pin': typeof PlayPinRoute
   '/play/$sessionId': typeof PlaySessionIdRoute
+  '/player/$pin': typeof PlayerPinRoute
+  '/quiz/$pin': typeof QuizPinRoute
   '/results/$quizId': typeof ResultsQuizIdRoute
   '/score/$sessionId': typeof ScoreSessionIdRoute
 }
@@ -82,8 +110,12 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/join': typeof JoinRoute
   '/login': typeof LoginRoute
+  '/host/$pin': typeof HostPinRoute
   '/leaderboard/$sessionId': typeof LeaderboardSessionIdRoute
+  '/play/$pin': typeof PlayPinRoute
   '/play/$sessionId': typeof PlaySessionIdRoute
+  '/player/$pin': typeof PlayerPinRoute
+  '/quiz/$pin': typeof QuizPinRoute
   '/results/$quizId': typeof ResultsQuizIdRoute
   '/score/$sessionId': typeof ScoreSessionIdRoute
 }
@@ -94,8 +126,12 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/join': typeof JoinRoute
   '/login': typeof LoginRoute
+  '/host/$pin': typeof HostPinRoute
   '/leaderboard/$sessionId': typeof LeaderboardSessionIdRoute
+  '/play/$pin': typeof PlayPinRoute
   '/play/$sessionId': typeof PlaySessionIdRoute
+  '/player/$pin': typeof PlayerPinRoute
+  '/quiz/$pin': typeof QuizPinRoute
   '/results/$quizId': typeof ResultsQuizIdRoute
   '/score/$sessionId': typeof ScoreSessionIdRoute
 }
@@ -107,8 +143,12 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/join'
     | '/login'
+    | '/host/$pin'
     | '/leaderboard/$sessionId'
+    | '/play/$pin'
     | '/play/$sessionId'
+    | '/player/$pin'
+    | '/quiz/$pin'
     | '/results/$quizId'
     | '/score/$sessionId'
   fileRoutesByTo: FileRoutesByTo
@@ -118,8 +158,12 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/join'
     | '/login'
+    | '/host/$pin'
     | '/leaderboard/$sessionId'
+    | '/play/$pin'
     | '/play/$sessionId'
+    | '/player/$pin'
+    | '/quiz/$pin'
     | '/results/$quizId'
     | '/score/$sessionId'
   id:
@@ -129,8 +173,12 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/join'
     | '/login'
+    | '/host/$pin'
     | '/leaderboard/$sessionId'
+    | '/play/$pin'
     | '/play/$sessionId'
+    | '/player/$pin'
+    | '/quiz/$pin'
     | '/results/$quizId'
     | '/score/$sessionId'
   fileRoutesById: FileRoutesById
@@ -141,8 +189,12 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   JoinRoute: typeof JoinRoute
   LoginRoute: typeof LoginRoute
+  HostPinRoute: typeof HostPinRoute
   LeaderboardSessionIdRoute: typeof LeaderboardSessionIdRoute
+  PlayPinRoute: typeof PlayPinRoute
   PlaySessionIdRoute: typeof PlaySessionIdRoute
+  PlayerPinRoute: typeof PlayerPinRoute
+  QuizPinRoute: typeof QuizPinRoute
   ResultsQuizIdRoute: typeof ResultsQuizIdRoute
   ScoreSessionIdRoute: typeof ScoreSessionIdRoute
 }
@@ -198,6 +250,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResultsQuizIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/quiz/$pin': {
+      id: '/quiz/$pin'
+      path: '/quiz/$pin'
+      fullPath: '/quiz/$pin'
+      preLoaderRoute: typeof QuizPinRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/player/$pin': {
+      id: '/player/$pin'
+      path: '/player/$pin'
+      fullPath: '/player/$pin'
+      preLoaderRoute: typeof PlayerPinRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/play/$sessionId': {
       id: '/play/$sessionId'
       path: '/play/$sessionId'
@@ -205,11 +271,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlaySessionIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/play/$pin': {
+      id: '/play/$pin'
+      path: '/play/$pin'
+      fullPath: '/play/$pin'
+      preLoaderRoute: typeof PlayPinRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/leaderboard/$sessionId': {
       id: '/leaderboard/$sessionId'
       path: '/leaderboard/$sessionId'
       fullPath: '/leaderboard/$sessionId'
       preLoaderRoute: typeof LeaderboardSessionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/host/$pin': {
+      id: '/host/$pin'
+      path: '/host/$pin'
+      fullPath: '/host/$pin'
+      preLoaderRoute: typeof HostPinRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -221,8 +301,12 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   JoinRoute: JoinRoute,
   LoginRoute: LoginRoute,
+  HostPinRoute: HostPinRoute,
   LeaderboardSessionIdRoute: LeaderboardSessionIdRoute,
+  PlayPinRoute: PlayPinRoute,
   PlaySessionIdRoute: PlaySessionIdRoute,
+  PlayerPinRoute: PlayerPinRoute,
+  QuizPinRoute: QuizPinRoute,
   ResultsQuizIdRoute: ResultsQuizIdRoute,
   ScoreSessionIdRoute: ScoreSessionIdRoute,
 }

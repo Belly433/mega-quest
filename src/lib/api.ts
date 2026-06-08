@@ -33,21 +33,66 @@ export const authApi = {
   },
 };
 export const quizApi = {
+  async create(data: any) {
+
+    const response = await fetch(
+      "http://127.0.0.1:8000/quiz/create",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      }
+    );
+
+    return await response.json();
+  },
+
   async getQuizzes() {
-    const response = await fetch("http://127.0.0.1:8000/quiz/");
-    return response.json();
+
+    const response = await fetch(
+      "http://127.0.0.1:8000/quiz/"
+    );
+
+    return await response.json();
   },
 };
 export const questionApi = {
-  async create(question: any) {
-    const response = await fetch("http://127.0.0.1:8000/question/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(question),
-    });
+  async add(quizId: number, question: any) {
 
-    return response.json();
+    const response = await fetch(
+      `http://127.0.0.1:8000/question/${quizId}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(question),
+      }
+    );
+
+    return await response.json();
   },
+};
+export const sessionApi = {
+
+  async createSession(quizId: number) {
+
+    const response = await fetch(
+      "http://127.0.0.1:8000/session/create",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          quiz_id: quizId,
+        }),
+      }
+    );
+
+    return await response.json();
+  }
+
 };

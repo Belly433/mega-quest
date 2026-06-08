@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Logo } from "@/components/Logo";
-import { playApi } from "@/lib/api";
 
 export const Route = createFileRoute("/leaderboard/$sessionId")({
   head: () => ({ meta: [{ title: "Leaderboard — Quizly" }] }),
@@ -14,11 +13,9 @@ function Board() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    playApi.leaderboard(sessionId)
-      .then((d) => setBoard(Array.isArray(d) ? d : d?.items || []))
-      .catch(() => setBoard([]))
-      .finally(() => setLoading(false));
-  }, [sessionId]);
+  setBoard([]);
+  setLoading(false);
+}, []);
 
   const podium = board.slice(0, 3);
   const rest = board.slice(3);
