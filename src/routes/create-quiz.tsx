@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Logo } from "@/components/Logo";
-import { quizApi, questionApi, type QuestionPayload } from "@/lib/api";
+import { quizApi, questionApi } from "@/lib/api";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/create-quiz")({
@@ -9,7 +9,12 @@ export const Route = createFileRoute("/create-quiz")({
   component: CreateQuiz,
 });
 
-type Draft = QuestionPayload;
+type Draft = {
+  text: string;
+  options: string[];
+  correctIndex: number;
+  timeLimit: number;
+};
 
 const ANSWER_STYLES = [
   "bg-answer-red text-answer-red-foreground",
@@ -49,6 +54,7 @@ function CreateQuiz() {
     try {
       const quiz = await quizApi.create({ title, description });
       for (const qq of questions) {
+        console.log("QUESTION SENT =", qq);
         await questionApi.add(quiz.id, qq);
       }
       toast.success("Quiz saved");
