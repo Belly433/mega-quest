@@ -1,98 +1,68 @@
-const API_URL = "http://127.0.0.1:8000";
+const API_URL =
+  (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_URL) ||
+  "http://localhost:8000";
+
+export const WS_URL = API_URL.replace(/^http/, "ws");
+
+async function post(path: string, body: unknown) {
+  const res = await fetch(`${API_URL}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  return res.json();
+}
+
+async function get(path: string) {
+  const res = await fetch(`${API_URL}${path}`);
+  return res.json();
+}
 
 export const authApi = {
-  async login(email: string, password: string) {
-    const response = await fetch(`${API_URL}/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email,
-        password,
-      }),
-    });
+  login: (email: string, password: string) =>
+    post("/auth/login", { email, password }),
 
-    return response.json();
-  },
-
-  async register(email: string, password: string, username: string) {
-    const response = await fetch(`${API_URL}/auth/register`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        username,
-        email,
-        password,
-      }),
-    });
-
-    return response.json();
-  },
+  register: (email: string, password: string, username: string) =>
+    post("/auth/register", { username, email, password }),
 };
+
 export const quizApi = {
-  async create(data: any) {
+  create: (data: { title: string; description: string }) =>
+    post("/quiz/create", data),
 
-    const response = await fetch(
-      "http://127.0.0.1:8000/quiz/create",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      }
-    );
+  getQuizzes: () => get("/quiz/"),
 
-    return await response.json();
-  },
-
-  async getQuizzes() {
-
-    const response = await fetch(
-      "http://127.0.0.1:8000/quiz/"
-    );
-
-    return await response.json();
-  },
+  get: (quizId: string | number) => get(`/quiz/${quizId}`),
 };
+
 export const questionApi = {
-  async add(quizId: number, question: any) {
-
-    const response = await fetch(
-      `http://127.0.0.1:8000/question/${quizId}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(question),
-      }
-    );
-
-    return await response.json();
-  },
+  add: (quizId: number, question: unknown) =>
+    post(`/question/${quizId}`, question),
 };
+
 export const sessionApi = {
+  createSession: (quizId: number) =>
+    post("/session/create", { quiz_id: quizId }),
 
-  async createSession(quizId: number) {
+  getSession: (pin: string) => get(`/session/${pin}`),
 
-    const response = await fetch(
-      "http://127.0.0.1:8000/session/create",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          quiz_id: quizId,
-        }),
-      }
-    );
+  getLeaderboard: (pin: string) => get(`/session/${pin}/leaderboard`),
+};
 
-    return await response.json();
-  }
+export const playerApi = {
+  join: (pin: string, username: string) =>
+    post("/player/join", { pin, username }),
+};
 
+// Stubs — anti-cheat is handled server-side via WebSocket answers
+export const antiCheatApi = {
+  log: async (_sessionId: string, _participantId: string, _event: string, _ts: number) => {},
+};
+
+// Stubs — score/play now handled via WebSocket game_over payload
+export const playApi = {
+  current: async (_sessionId: string) => null,
+  submit: async (_sessionId: string, _data: unknown) => {},
+  score: async (_sessionId: string, _participantId: string) => null,
+  leaderboard: async (_quizId: string) => [],
 };
