@@ -54,8 +54,16 @@ function HostPage() {
     ws.onopen = () => setWsReady(true);
 
     ws.onerror = () => {
-      setError("WebSocket connection failed. Is the backend running?");
+      // only show error if we haven't already shown the lobby
+      setError((prev) => prev ?? "WebSocket connection failed. Is the backend running?");
       toast.error("Cannot connect to server");
+    };
+
+    ws.onclose = (e) => {
+      setWsReady(false);
+      if (e.code !== 1000 && e.code !== 1001) {
+        setError((prev) => prev ?? "Connection lost. Please go back and try again.");
+      }
     };
 
     ws.onmessage = (event) => {
@@ -88,8 +96,6 @@ function HostPage() {
         toast.error(msg.message);
       }
     };
-
-    ws.onclose = () => setWsReady(false);
 
     return () => {
       stopTimer();
