@@ -43,6 +43,10 @@ function PlayPage() {
   const wsRef = useRef<WebSocket | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startedAtRef = useRef<number>(Date.now());
+  const reconnectRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const retriesRef = useRef(0);
+  const destroyedRef = useRef(false);
+  const phaseRef = useRef<Phase>("connecting");
 
   const [phase, setPhase] = useState<Phase>("connecting");
   const [question, setQuestion] = useState<Question | null>(null);
@@ -73,86 +77,106 @@ function PlayPage() {
     return () => document.removeEventListener("visibilitychange", onVisChange);
   }, [phase]);
 
-  // ── WebSocket ─────────────────────────────────────────────────────────────
+  // ── WebSocket with auto-reconnect ────────────────────────────────────────
   useEffect(() => {
     if (!username) return;
+    destroyedRef.current = false;
+    retriesRef.current = 0;
 
-    const ws = new WebSocket(`${WS_URL}/session/ws/player/${pin}`);
-    wsRef.current = ws;
+    function connect() {
+      if (destroyedRef.current) return;
 
-    ws.onopen = () => {
-      ws.send(JSON.stringify({ type: "player_connect", username }));
-    };
+      const ws = new WebSocket(`${WS_URL}/session/ws/player/${pin}`);
+      wsRef.current = ws;
 
-    ws.onerror = () => {
-      setError("Could not connect to game server. Check your PIN or ask the host.");
-      toast.error("Connection failed");
-    };
+      ws.onopen = () => {
+        retriesRef.current = 0;
+        ws.send(JSON.stringify({ type: "player_connect", username }));
+      };
 
-    ws.onmessage = (event) => {
-      const msg = JSON.parse(event.data);
+      ws.onerror = () => {
+        // handled in onclose
+      };
 
-      if (msg.type === "joined") {
-        setPhase(msg.phase === "playing" ? "question" : "waiting");
-      } else if (msg.type === "question") {
-        stopTimer();
-        const q: Question = {
-          id: msg.id,
-          text: msg.text,
-          options: msg.options,
-          timeLimit: msg.timeLimit,
-          index: msg.index,
-          total: msg.total,
-        };
-        setQuestion(q);
-        setSelected(null);
-        setResult(null);
-        setPhase("question");
-        startedAtRef.current = Date.now();
-        startTimer(q.timeLimit);
-      } else if (msg.type === "answer_result") {
-        stopTimer();
-        setResult({
-          correct: msg.correct,
-          correct_index: msg.correct_index,
-          points: msg.points,
-          total_score: msg.total_score,
-        });
-        setTotalScore(msg.total_score);
-        setPhase("answered");
-      } else if (msg.type === "game_over") {
-        stopTimer();
-        const board: { username: string; score: number; rank: number }[] = msg.leaderboard || [];
-        setLeaderboard(board);
-        setPhase("finished");
+      ws.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
 
-        // Store result for score page
-        const me = board.find((p) => p.username === username);
-        localStorage.setItem(
-          "game_result",
-          JSON.stringify({
-            score: me?.score ?? totalScore,
-            rank: me?.rank ?? null,
-            username,
-            pin,
-            leaderboard: board,
-          })
-        );
-      } else if (msg.type === "error") {
-        toast.error(msg.message);
-        setError(msg.message);
-      }
-    };
+        if (msg.type === "joined") {
+          const next: Phase = msg.phase === "playing" ? "question" : "waiting";
+          phaseRef.current = next;
+          setPhase(next);
+        } else if (msg.type === "question") {
+          stopTimer();
+          const q: Question = {
+            id: msg.id,
+            text: msg.text,
+            options: msg.options,
+            timeLimit: msg.timeLimit,
+            index: msg.index,
+            total: msg.total,
+          };
+          setQuestion(q);
+          setSelected(null);
+          setResult(null);
+          phaseRef.current = "question";
+          setPhase("question");
+          startedAtRef.current = Date.now();
+          startTimer(q.timeLimit);
+        } else if (msg.type === "answer_result") {
+          stopTimer();
+          setResult({
+            correct: msg.correct,
+            correct_index: msg.correct_index,
+            points: msg.points,
+            total_score: msg.total_score,
+          });
+          setTotalScore(msg.total_score);
+          phaseRef.current = "answered";
+          setPhase("answered");
+        } else if (msg.type === "game_over") {
+          stopTimer();
+          const board: { username: string; score: number; rank: number }[] = msg.leaderboard || [];
+          setLeaderboard(board);
+          phaseRef.current = "finished";
+          setPhase("finished");
 
-    ws.onclose = () => {
-      if (phase !== "finished") {
-        setError("Disconnected from server");
-      }
-    };
+          const me = board.find((p) => p.username === username);
+          localStorage.setItem(
+            "game_result",
+            JSON.stringify({
+              score: me?.score ?? totalScore,
+              rank: me?.rank ?? null,
+              username,
+              pin,
+              leaderboard: board,
+            })
+          );
+        } else if (msg.type === "error") {
+          toast.error(msg.message);
+          setError(msg.message);
+        }
+      };
+
+      ws.onclose = () => {
+        if (destroyedRef.current || phaseRef.current === "finished") return;
+        const maxRetries = 5;
+        if (retriesRef.current < maxRetries) {
+          retriesRef.current += 1;
+          const delay = Math.min(1000 * retriesRef.current, 4000);
+          reconnectRef.current = setTimeout(connect, delay);
+        } else {
+          setError("Cannot connect to game server. Check that the backend is running.");
+        }
+      };
+    }
+
+    connect();
 
     return () => {
+      destroyedRef.current = true;
+      if (reconnectRef.current) clearTimeout(reconnectRef.current);
+      wsRef.current?.close(1000);
       stopTimer();
-      ws.close();
     };
   }, [pin, username]);
 
