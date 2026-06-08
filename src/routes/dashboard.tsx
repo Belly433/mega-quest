@@ -37,6 +37,7 @@ function Dashboard() {
         toast.error("Failed to create session");
         return;
       }
+      localStorage.setItem("host_quiz_id", String(id));
       navigate({ to: "/host/$pin", params: { pin: session.pin } });
     } catch {
       toast.error("Could not start session — is the backend running?");
