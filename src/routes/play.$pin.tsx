@@ -47,6 +47,7 @@ function PlayPage() {
   const retriesRef = useRef(0);
   const destroyedRef = useRef(false);
   const phaseRef = useRef<Phase>("connecting");
+  const warningsRef = useRef(0);
 
   const [phase, setPhase] = useState<Phase>("connecting");
   const [question, setQuestion] = useState<Question | null>(null);
@@ -68,9 +69,11 @@ function PlayPage() {
   // ── Anti-cheat: tab visibility ────────────────────────────────────────────
   useEffect(() => {
     function onVisChange() {
-      if (document.hidden && phase === "question") {
-        setWarnings((w) => w + 1);
-        toast.warning("Tab switch detected — this is logged!", { duration: 4000 });
+      if (document.hidden && phaseRef.current === "question") {
+        warningsRef.current += 1;
+        setWarnings(warningsRef.current);
+        toast.warning("Tab switch detected — host has been notified!", { duration: 4000 });
+        wsRef.current?.send(JSON.stringify({ type: "tab_switch", username, count: warningsRef.current }));
       }
     }
     document.addEventListener("visibilitychange", onVisChange);
