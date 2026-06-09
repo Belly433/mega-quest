@@ -47,6 +47,7 @@ function HostPage() {
   const [leaderboard, setLeaderboard] = useState<{ username: string; score: number; rank: number }[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [wsReady, setWsReady] = useState(false);
+  const [cheatWarnings, setCheatWarnings] = useState<{ username: string; count: number }[]>([]);
 
   // ── WebSocket connection with auto-reconnect ───────────────────────────────
   useEffect(() => {
@@ -110,6 +111,15 @@ function HostPage() {
           stopTimer();
           setLeaderboard(msg.leaderboard || []);
           setPhase("finished");
+        } else if (msg.type === "cheat_warning") {
+          setCheatWarnings((prev) => {
+            const existing = prev.find((w) => w.username === msg.username);
+            if (existing) {
+              return prev.map((w) => w.username === msg.username ? { ...w, count: msg.count } : w);
+            }
+            return [...prev, { username: msg.username, count: msg.count }];
+          });
+          toast.warning(`⚠ ${msg.username} switched tabs (${msg.count}x)`);
         } else if (msg.type === "error") {
           toast.error(msg.message);
         }
@@ -308,6 +318,21 @@ function HostPage() {
               ))}
             </div>
           </div>
+
+          {cheatWarnings.length > 0 && (
+            <div className="mt-4 bg-destructive/10 border border-destructive/30 rounded-2xl p-4">
+              <div className="text-xs font-bold uppercase tracking-wider text-destructive mb-2">
+                ⚠ Tab Switch Warnings
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {cheatWarnings.map((w) => (
+                  <span key={w.username} className="px-3 py-1 bg-destructive/20 text-destructive rounded-full text-sm font-semibold">
+                    {w.username} — {w.count}x
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </main>
       </div>
     );
