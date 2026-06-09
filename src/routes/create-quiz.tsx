@@ -172,24 +172,21 @@ function CreateQuiz() {
 
           <div className="mt-6 grid sm:grid-cols-2 gap-3">
             {q.options.map((opt, i) => (
-              <div
-                key={i}
-                className={`rounded-2xl p-4 flex items-center gap-3 shadow-card ${ANSWER_STYLES[i]}`}
-              >
-                <div className="text-2xl font-black w-8 text-center">{ANSWER_SHAPES[i]}</div>
+              <div key={i} className={`rounded-2xl p-4 flex items-center gap-3 shadow-card ${ANSWER_STYLES[i]}`}>
+                <div className="text-2xl font-black w-8 text-center flex-shrink-0">{ANSWER_SHAPES[i]}</div>
                 <input
                   value={opt}
                   onChange={(e) => updateOption(i, e.target.value)}
                   placeholder={`Answer ${i + 1}`}
-                  className="flex-1 bg-black/15 placeholder:text-current/60 px-3 py-2 rounded-lg font-bold outline-none"
+                  className="flex-1 min-w-0 bg-black/15 placeholder:text-current/60 px-3 py-2 rounded-lg font-bold outline-none"
                 />
                 <button
                   onClick={() => update({ correctIndex: i })}
                   title="Mark correct"
-                  className={`h-9 w-9 rounded-full border-2 flex items-center justify-center font-black transition ${
+                  className={`flex-shrink-0 h-9 w-9 rounded-full border-2 flex items-center justify-center font-black transition ${
                     q.correctIndex === i
-                      ? "bg-white text-emerald-600 border-white"
-                      : "border-white/70 hover:bg-white/10"
+                      ? "bg-white text-emerald-600 border-white scale-110"
+                      : "border-white bg-white/25 hover:bg-white/50"
                   }`}
                 >
                   ✓
